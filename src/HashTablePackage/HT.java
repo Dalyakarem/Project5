@@ -1,14 +1,20 @@
 package HashTablePackage;
 
+import java.util.LinkedList;
+
 public class HT {
-    private Packet[] records;
+    private LinkedList<Packet>[] records;
 
     private int arraySize;
 
     public HT(int arraySize) {
         this.arraySize = arraySize;
 
-        records = new Packet[arraySize];
+        records = new LinkedList[arraySize];
+
+        for (int i = 0; i < arraySize; i++) {
+            records[i] = new LinkedList<>();
+        }
     }
 
     private int hashFunction(long sequenceNumber) {
@@ -20,22 +26,7 @@ public class HT {
 
         int index = this.hashFunction(key);
 
-        boolean foundHome = false;
-
-        int endPoint = index;
-
-        do {
-            if ((records[index] == null) || (!records[index].isActive())) {
-                records[index] = packet;
-                foundHome = true;
-            } else {
-                index = (++index) % arraySize;
-            }
-        } while ((foundHome == false) && (index != endPoint));
-
-        if (foundHome == false) {
-            System.out.println("The hash table is full, and therefore the object was not inserted. Sorry!");
-        }
+        records[index].add(packet);
     }
 
     public Packet searchPacket(long searchKey, boolean delete) {
@@ -43,21 +34,12 @@ public class HT {
 
         int index = this.hashFunction(searchKey);
 
-        int endPoint = index;
-
-        do {
-            currentPacket = records[index];
-
-            if (currentPacket == null) return null;
-
-            if (currentPacket.getSequenceNumber() == searchKey) {
-                if (delete == true) records[index].setActive(false);
-                return currentPacket;
-            } else {
-                index = (++index) % arraySize;
+        for (Packet packet : records[index]) {
+            if (packet.getSequenceNumber() == searchKey && packet.isActive()) {
+                if (delete == true) packet.setActive(false);
+                return packet;
             }
-
-        } while (index != endPoint);
+        }
 
         System.out.println("Sorry, the target packet is not present in the hash table");
 
